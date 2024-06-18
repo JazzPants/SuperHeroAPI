@@ -1,6 +1,6 @@
 ﻿namespace SuperHeroAPI
 {
-    public class Class
+    public class SuperHero
     {
     }
 }
