@@ -25,7 +25,7 @@ namespace SuperHeroAPI.Controllers
             return await _mongoDBService.GetSuperheroesAsync();
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:length(24)}")]
         public async Task<ActionResult<Superhero>> GetSuperHero(string id)
         {
             var dbHero = await _mongoDBService.GetSuperheroAsync(id);
@@ -46,7 +46,7 @@ namespace SuperHeroAPI.Controllers
             return CreatedAtAction(nameof(GetSuperHeroes), new { id = superhero.Id }, superhero);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:length(24)}")]
         public async Task<IActionResult> UpdateSuperHero(string id, Superhero updatedSuperhero)
         {
             //find whether hero exists in database already
@@ -66,7 +66,7 @@ namespace SuperHeroAPI.Controllers
         }
 
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:length(24)}")]
         //[Route("...")]
         public async Task<IActionResult> DeleteSuperHero(string id)
         {

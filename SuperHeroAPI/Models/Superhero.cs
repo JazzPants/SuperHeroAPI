@@ -10,19 +10,19 @@ namespace SuperHeroAPI.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
-
+        
         public string Name { get; set; } = null!;
-
+        
         public string FirstName { get; set; } = null!;
-
+        
         public string LastName { get; set; } = null!;
-
+        
         public string SuperPower { get; set; } = null!;
-
+        
         public string Location { get; set; } = null!;
 
-        [BsonElement("items")]
-        [JsonPropertyName("items")]
+        [BsonElement("Items")]
+        [JsonPropertyName("Items")]
         public List<string> Images { get; set; } = null!;
     }
 }
