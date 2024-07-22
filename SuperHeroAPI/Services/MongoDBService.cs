@@ -18,9 +18,9 @@ namespace SuperHeroAPI.Services
             _superheroCollection = database.GetCollection<Superhero>(mongoDBSettings.Value.CollectionName);
         }
 
-        public async Task<List<Superhero>> GetSuperheroesAsync()
+        public async Task<List<Superhero>> GetSuperheroesAsync(int pageNumber, int pageSize)
         {
-            return await _superheroCollection.Find(new BsonDocument()).ToListAsync();
+            return await _superheroCollection.Find(new BsonDocument()).Skip((pageNumber - 1) * pageSize).Limit(pageSize).ToListAsync();
         }
 
         public async Task<Superhero> GetSuperheroAsync(string id)

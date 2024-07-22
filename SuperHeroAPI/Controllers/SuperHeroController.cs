@@ -20,9 +20,15 @@ namespace SuperHeroAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<List<Superhero>> GetSuperHeroes()
+        public async Task<ActionResult<List<Superhero>>> GetSuperHeroes([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            return await _mongoDBService.GetSuperheroesAsync();
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                return BadRequest("Invalid page or page size.");
+            }
+
+            return await _mongoDBService.GetSuperheroesAsync(pageNumber, pageSize);
+            //return Ok(superheroes);
         }
 
         [HttpGet("{id:length(24)}")]
