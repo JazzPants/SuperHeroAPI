@@ -27,7 +27,19 @@ namespace SuperHeroAPI.Controllers
                 return BadRequest("Invalid page or page size.");
             }
 
-            return await _mongoDBService.GetSuperheroesAsync(pageNumber, pageSize);
+            var superheroes = await _mongoDBService.GetSuperheroesAsync(pageNumber, pageSize);
+            var totalCount = await _mongoDBService.GetSuperheroCountAsync();
+
+            var response = new
+            {
+                TotalCount = totalCount,
+                Page = pageNumber,
+                PageSize = pageSize,
+                SuperHeroesData = superheroes
+            };
+
+            return Ok(response);
+            //return await _mongoDBService.GetSuperheroesAsync(pageNumber, pageSize);
             //return Ok(superheroes);
         }
 
@@ -53,7 +65,7 @@ namespace SuperHeroAPI.Controllers
         }
 
         [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> UpdateSuperHero(string id, Superhero updatedSuperhero)
+        public async Task<IActionResult> UpdateSuperHero(string id, [FromBody] SuperheroDTO updatedSuperhero)
         {
             //find whether hero exists in database already
             //var dbHero = await _context.SuperHeroes.FindAsync(hero.Id);
@@ -63,9 +75,18 @@ namespace SuperHeroAPI.Controllers
                 return NotFound();
             }
             
-            updatedSuperhero.Id = dbHero.Id;
+            Superhero s = new Superhero { 
+                Id = dbHero.Id,
+                Name= updatedSuperhero.Name,
+            FirstName = updatedSuperhero.FirstName,
+            LastName = updatedSuperhero.LastName,
+            SuperPower = updatedSuperhero.SuperPower,
+            Location = updatedSuperhero.Location,
+            Images = updatedSuperhero.Images
+            };
+            //updatedSuperhero.Id = dbHero.Id;
 
-            await _mongoDBService.UpdateSuperheroAsync(id, updatedSuperhero);
+            await _mongoDBService.UpdateSuperheroAsync(s);
 
             //return Ok(await _context.SuperHeroes.ToListAsync());
             return NoContent();

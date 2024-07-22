@@ -34,9 +34,9 @@ namespace SuperHeroAPI.Services
             return;
         }
 
-        public async Task UpdateSuperheroAsync(string id, Superhero updatedSuperhero)
+        public async Task UpdateSuperheroAsync(Superhero updatedSuperhero)
         {
-            await _superheroCollection.ReplaceOneAsync(x => x.Id == id, updatedSuperhero);
+            await _superheroCollection.ReplaceOneAsync(x => x.Id == updatedSuperhero.Id, updatedSuperhero);
             return;
         }
 
@@ -46,5 +46,9 @@ namespace SuperHeroAPI.Services
             return;
         }
 
+        public async Task<long> GetSuperheroCountAsync()
+        {
+            return await _superheroCollection.CountDocumentsAsync(new BsonDocument());
+        }
     }
 }
