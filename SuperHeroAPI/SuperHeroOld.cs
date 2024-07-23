@@ -1,6 +1,6 @@
 ﻿namespace SuperHeroAPI
 {
-    public class SuperHero
+    public class SuperHeroOld
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;

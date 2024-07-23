@@ -1,79 +1,111 @@
 ﻿//using Microsoft.AspNetCore.Http;
+using System;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SuperHeroAPI.Data;
+using SuperHeroAPI.Services;
+using SuperHeroAPI.Models;
+//using Microsoft.EntityFrameworkCore;
+//using SuperHeroAPI.Data;
 
 namespace SuperHeroAPI.Controllers
 {
+    [Controller]
     [Route("api/[controller]")]
-    [ApiController]
-    public class SuperHeroController : ControllerBase
+    public class SuperHeroController : Controller
     {
-        private readonly DataContext _context;
+        private readonly MongoDBService _mongoDBService;
 
-        public SuperHeroController(DataContext context)
+        public SuperHeroController(MongoDBService mongoDBService)
         {
-            _context = context;
+            _mongoDBService = mongoDBService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<SuperHero>>> GetSuperHeroes()
+        public async Task<ActionResult<List<Superhero>>> GetSuperHeroes([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            return Ok(await _context.SuperHeroes.ToListAsync());
-            //return new List<SuperHero>
-            //{
-            //    new SuperHero
-            //    {
-            //        Name = "Spider Man",
-            //        FirstName = "Peter",
-            //        LastName = "Parker",
-            //        Place = "New York City"
-            //    }
-            //};
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                return BadRequest("Invalid page or page size.");
+            }
+
+            var superheroes = await _mongoDBService.GetSuperheroesAsync(pageNumber, pageSize);
+            var totalCount = await _mongoDBService.GetSuperheroCountAsync();
+
+            var response = new
+            {
+                TotalCount = totalCount,
+                Page = pageNumber,
+                PageSize = pageSize,
+                SuperHeroesData = superheroes
+            };
+
+            return Ok(response);
+            //return await _mongoDBService.GetSuperheroesAsync(pageNumber, pageSize);
+            //return Ok(superheroes);
         }
+
+        [HttpGet("{id:length(24)}")]
+        public async Task<ActionResult<Superhero>> GetSuperHero(string id)
+        {
+            var dbHero = await _mongoDBService.GetSuperheroAsync(id);
+            if (dbHero == null)
+            {
+                return NotFound();
+            }
+            return dbHero;
+        }
+
+        //todo add get for single superhero
 
         [HttpPost]
-        public async Task<ActionResult<List<SuperHero>>> CreateSuperHero(SuperHero hero)
+        public async Task<IActionResult> CreateSuperHero([FromBody] Superhero superhero)
         {
-            //add hero
-            _context.SuperHeroes.Add(hero);
-            //save the changes
-            await _context.SaveChangesAsync();
-
-            //return the new list
-            return Ok(await _context.SuperHeroes.ToListAsync());
+            await _mongoDBService.CreateSuperHeroAsync(superhero);
+            //return 201 status code response
+            return CreatedAtAction(nameof(GetSuperHeroes), new { id = superhero.Id }, superhero);
         }
 
-        [HttpPut]
-        public async Task<ActionResult<List<SuperHero>>> UpdateSuperHero(SuperHero hero)
+        [HttpPut("{id:length(24)}")]
+        public async Task<IActionResult> UpdateSuperHero(string id, [FromBody] SuperheroDTO updatedSuperhero)
         {
             //find whether hero exists in database already
-            var dbHero = await _context.SuperHeroes.FindAsync(hero.Id);
-            if(dbHero == null) 
-                return BadRequest("Hero not found.");
+            //var dbHero = await _context.SuperHeroes.FindAsync(hero.Id);
+            var dbHero = await _mongoDBService.GetSuperheroAsync(id);
+            if(dbHero == null) {
+                //return BadRequest("Hero not found.");
+                return NotFound();
+            }
+            
+            Superhero s = new Superhero { 
+                Id = dbHero.Id,
+                Name= updatedSuperhero.Name,
+            FirstName = updatedSuperhero.FirstName,
+            LastName = updatedSuperhero.LastName,
+            SuperPower = updatedSuperhero.SuperPower,
+            Location = updatedSuperhero.Location,
+            Images = updatedSuperhero.Images
+            };
+            //updatedSuperhero.Id = dbHero.Id;
 
-            dbHero.Name = hero.Name;
-            dbHero.FirstName = hero.FirstName;
-            dbHero.LastName = hero.LastName;
-            dbHero.Place = hero.Place;
+            await _mongoDBService.UpdateSuperheroAsync(s);
 
-            await _context.SaveChangesAsync();
-
-            return Ok(await _context.SuperHeroes.ToListAsync());
+            //return Ok(await _context.SuperHeroes.ToListAsync());
+            return NoContent();
         }
 
-        [HttpDelete("{id}")]
+
+        [HttpDelete("{id:length(24)}")]
         //[Route("...")]
-        public async Task<ActionResult<List<SuperHero>>> DeleteSuperHero(int id)
+        public async Task<IActionResult> DeleteSuperHero(string id)
         {
-            var dbHero = await _context.SuperHeroes.FindAsync(id);
+            var dbHero = await _mongoDBService.GetSuperheroAsync(id);
             if (dbHero == null)
-                return BadRequest("Hero not found.");
+            {
+                return NotFound();
+            }
 
-            _context.SuperHeroes.Remove(dbHero);
-            await _context.SaveChangesAsync();
+            await _mongoDBService.DeleteSuperHeroAsync(id);
 
-            return Ok(await _context.SuperHeroes.ToListAsync());
+            return NoContent();
         }
     }
 }
