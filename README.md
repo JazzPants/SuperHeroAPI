@@ -24,4 +24,4 @@ Visual Studio 2022 users:
 1. Clone the SuperHeroUI repo and this repo.
 2. Run both repos locally (npm run ng serve or ng serve for SuperHeroUI, and dotnet run for SuperHeroAPI)
 3. Open link `http://localhost:4200/` to access the front-end UI
-4. Experiment with the different features (more instructions at: https://github.com/JazzPants/SuperHero.UI/tree/feature/reactive-forms)
+4. Experiment with the different features (more instructions at: https://github.com/JazzPants/SuperHero.UI/tree/main)
